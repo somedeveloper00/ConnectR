@@ -170,9 +170,9 @@ MonoBehaviour:
   redCoin: {fileID: 919132149155446097, guid: d34da4b1623ce2a4aa9a67a8049ca2ae, type: 3}
   yellowCoin: {fileID: 919132149155446097, guid: bdd9be44907e2c94983d0de618619103, type: 3}
   startingPoint: {fileID: 398264623}
-  N: 10
-  M: 10
-  R: 5
+  X_Length: 8
+  Y_Length: 7
+  R: 3
 --- !u!1 &398264623
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,7 +429,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   column: {fileID: 3060926015974022179, guid: 3e153c6aeb133364b849f48016ffc695, type: 3}
-  prefabSpot: {fileID: 8073236698584709293, guid: cddefd64dad700142836380749219c93, type: 3}
+  prefabSpot: {fileID: 4849359195023966201, guid: cddefd64dad700142836380749219c93, type: 3}
 --- !u!4 &1261722450
 Transform:
   m_ObjectHideFlags: 0
@@ -494,6 +494,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6489fc99fdefa0148a0bd3ef4312b651, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 6489fc99fdefa0148a0bd3ef4312b651, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 6489fc99fdefa0148a0bd3ef4312b651, type: 3}
