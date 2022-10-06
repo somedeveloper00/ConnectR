@@ -9,13 +9,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject redCoin;
     [SerializeField] private GameObject yellowCoin;
     [SerializeField] private GameObject startingPoint;
-    [SerializeField] private int N;
-    public int GetN => N;
-    [SerializeField] private int M;
-    public int GetM => M;
+    [SerializeField] private int X_Length;
+    public int GetXLength => X_Length;
+    [SerializeField] private int Y_Length;
+    public int GetYLength => Y_Length;
     [SerializeField] private int R;
     public int GetR => R;
-    private int currentPlayer = 1;
+    private Player currentPlayer = Player.A;
     private bool shouldKeepPlaying = true;
 
     private void Awake()
@@ -32,23 +32,23 @@ public class GameManager : MonoBehaviour
         if (rowIndex != -1)
         {
             // Coin should go to the current column clicked at the first empty valid row
-            Board.instance.DropCoinAtPosition(rowIndex, columnIndex, currentPlayer);
+            Board.instance.DropCoinAtPosition(columnIndex, rowIndex, currentPlayer);
             PlaceCoinOnBoard(rowIndex, columnIndex);
         }
     }
 
     // Create the coin game object and place it in the right spot in the board
-    private void PlaceCoinOnBoard(int rowIndex, int columnIndex)
+    private void PlaceCoinOnBoard(int columnIndex, int rowIndex)
     {
-        Debug.Log($"RowIndex: {rowIndex} ColumnIndex: {columnIndex}");
+        Debug.Log($"ColumnIndex: {columnIndex} | RowIndex: {rowIndex}");
         Debug.Log("CurrentPlayer: " + currentPlayer);
-        GenerateColumns.gameObjectBoardState[rowIndex, columnIndex].gameObject.transform.GetChild(currentPlayer == 1 ? 4 : 5).gameObject.SetActive(true);
+        GenerateColumns.gameObjectBoardState[columnIndex, rowIndex]
+            .gameObject.transform.GetChild(currentPlayer == Player.A ? 4 : 5).gameObject.SetActive(true);
         /*GameObject playerCoin = Instantiate(currentPlayer == 1 ? redCoin : yellowCoin);
         playerCoin.transform.position = new Vector3(-(startingPoint.transform.position.x + columnIndex),
             startingPoint.transform.position.y - rowIndex, startingPoint.transform.position.z);*/
 
         // switch to the other player for proper color coin to be placed next
-
     }
 
     public void WinCheck(bool hasWinner)
@@ -57,6 +57,7 @@ public class GameManager : MonoBehaviour
         {
             // Show Winner
             Debug.Log($"Player {currentPlayer} has won");
+            Debug.Break();
         }
         else
         {
@@ -70,11 +71,11 @@ public class GameManager : MonoBehaviour
     {
         switch (currentPlayer)
         {
-            case 1:
-                currentPlayer = 2;
+            case Player.A:
+                currentPlayer = Player.B;
                 break;
-            case 2:
-                currentPlayer = 1;
+            case Player.B:
+                currentPlayer = Player.A;
                 break;
         }
     }

@@ -5,17 +5,17 @@ using UnityEngine;
 
 public class GenerateColumns : MonoBehaviour
 {
-    public static GameObject[,] gameObjectBoardState;
+    public static SelectableCell[,] gameObjectBoardState;
     
     [SerializeField] private GameObject column;
-    [SerializeField] private GameObject prefabSpot;
+    [SerializeField] private SelectableCell prefabSpot;
     private List<GameObject> _columns = new();
 
     private void Awake()
     {
-        var M = GameManager.instance.GetM;
-        var N = GameManager.instance.GetN;
-        gameObjectBoardState = new GameObject[N, M];
+        var y_length = GameManager.instance.GetYLength;
+        var x_length = GameManager.instance.GetXLength;
+        gameObjectBoardState = new SelectableCell[x_length, y_length];
     }
 
     private void Start()
@@ -26,10 +26,10 @@ public class GenerateColumns : MonoBehaviour
 
     private void SpawnColumns()
     {
-        for (int i = 0; i < GameManager.instance.GetN; i++)
+        for (int i = 0; i < GameManager.instance.GetXLength; i++)
         {
             var column = Instantiate(this.column, new Vector3(3 - i, 3.7f), Quaternion.identity);
-            column.transform.localScale = new Vector3(1, GameManager.instance.GetM, 1);
+            column.transform.localScale = new Vector3(1, GameManager.instance.GetYLength, 1);
             column.name = $"Column_{i}";
             _columns.Add(column);
         }
@@ -37,13 +37,14 @@ public class GenerateColumns : MonoBehaviour
 
     private void SpawnIndividualSpots()
     {
-        for (int i = GameManager.instance.GetN - 1; i >= 0; i--)
+        for (int x = 0; x < GameManager.instance.GetXLength; x++)
         {
-            for (int j = 0; j < GameManager.instance.GetM; j++)
+            for (int y = 0; y < GameManager.instance.GetYLength; y++)
             {
-                var spot = Instantiate(prefabSpot, new Vector3(3 - i, 1.15f + j), Quaternion.identity);
-                spot.name = $"{j},{i}";
-                gameObjectBoardState[i, j] = spot;
+                var spot = Instantiate(prefabSpot, new Vector3(x, y), Quaternion.identity);
+                spot.name = $"{x},{y}";
+                spot.Init(x, y);
+                gameObjectBoardState[x, y] = spot;
             }
         }
     }
