@@ -23,11 +23,12 @@ public class GameManager : MonoBehaviour
         instance = this;
     }
     
+
     public void HandleColumnClick(int columnIndex)
     {
         // Drop a new coin at the bottom most valid row
         var rowIndex = Board.instance.FindRowForNewCoin(columnIndex);
-        Debug.Log(rowIndex);
+        Debug.Log("RowIndex: " + rowIndex);
         if (rowIndex != -1)
         {
             // Coin should go to the current column clicked at the first empty valid row
@@ -39,10 +40,13 @@ public class GameManager : MonoBehaviour
     // Create the coin game object and place it in the right spot in the board
     private void PlaceCoinOnBoard(int rowIndex, int columnIndex)
     {
-        GameObject playerCoin = Instantiate(currentPlayer == 1 ? redCoin : yellowCoin);
+        Debug.Log($"RowIndex: {rowIndex} ColumnIndex: {columnIndex}");
+        Debug.Log("CurrentPlayer: " + currentPlayer);
+        GenerateColumns.gameObjectBoardState[rowIndex, columnIndex].gameObject.transform.GetChild(currentPlayer == 1 ? 4 : 5).gameObject.SetActive(true);
+        /*GameObject playerCoin = Instantiate(currentPlayer == 1 ? redCoin : yellowCoin);
         playerCoin.transform.position = new Vector3(-(startingPoint.transform.position.x + columnIndex),
-            startingPoint.transform.position.y - rowIndex, startingPoint.transform.position.z);
-        
+            startingPoint.transform.position.y - rowIndex, startingPoint.transform.position.z);*/
+
         // switch to the other player for proper color coin to be placed next
 
     }
@@ -52,7 +56,7 @@ public class GameManager : MonoBehaviour
         if (hasWinner)
         {
             // Show Winner
-            
+            Debug.Log($"Player {currentPlayer} has won");
         }
         else
         {
