@@ -172,7 +172,7 @@ MonoBehaviour:
   startingPoint: {fileID: 398264623}
   X_Length: 8
   Y_Length: 7
-  R: 5
+  R: 3
 --- !u!1 &398264623
 GameObject:
   m_ObjectHideFlags: 0

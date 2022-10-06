@@ -26,14 +26,15 @@ public class GameManager : MonoBehaviour
 
     public void HandleColumnClick(int columnIndex)
     {
+        Debug.Log($"clicked on column {columnIndex}");
         // Drop a new coin at the bottom most valid row
         var rowIndex = Board.instance.FindRowForNewCoin(columnIndex);
         Debug.Log("RowIndex: " + rowIndex);
         if (rowIndex != -1)
         {
             // Coin should go to the current column clicked at the first empty valid row
+            PlaceCoinOnBoard(columnIndex, rowIndex);
             Board.instance.DropCoinAtPosition(columnIndex, rowIndex, currentPlayer);
-            PlaceCoinOnBoard(rowIndex, columnIndex);
         }
     }
 
@@ -42,13 +43,10 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log($"ColumnIndex: {columnIndex} | RowIndex: {rowIndex}");
         Debug.Log("CurrentPlayer: " + currentPlayer);
+        
         GenerateColumns.gameObjectBoardState[columnIndex, rowIndex]
-            .gameObject.transform.GetChild(currentPlayer == Player.A ? 4 : 5).gameObject.SetActive(true);
-        /*GameObject playerCoin = Instantiate(currentPlayer == 1 ? redCoin : yellowCoin);
-        playerCoin.transform.position = new Vector3(-(startingPoint.transform.position.x + columnIndex),
-            startingPoint.transform.position.y - rowIndex, startingPoint.transform.position.z);*/
-
-        // switch to the other player for proper color coin to be placed next
+            .GetPlayerGameObject(currentPlayer)
+            .gameObject.SetActive(true);
     }
 
     public void WinCheck(bool hasWinner)

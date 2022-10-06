@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public struct Cell
@@ -8,7 +5,7 @@ public struct Cell
     public bool isEmpty;
     public Player player;
 
-    public override string ToString() => isEmpty ? "_" : player.ToString();
+    public override string ToString() => isEmpty ? "-" : player.ToString();
     public static bool operator ==(Cell c1, Cell c2) => c1.isEmpty == c2.isEmpty && c1.player == c2.player;
     public static bool operator !=(Cell c1, Cell c2) => !(c1 == c2);
 }
@@ -47,10 +44,10 @@ public class Board : MonoBehaviour
     public int FindRowForNewCoin(int columnIndex)
     {
         var y_length = GameManager.instance.GetYLength;
-        for (int y = y_length - 1; y >= 0; y--)
+        for (int y = 0; y < y_length; y++)
         {
             // return the first row of the column which has no coin placed in it
-            if (boardState[y, columnIndex].isEmpty)
+            if (boardState[columnIndex, y].isEmpty)
             {
                 return y;
             }
@@ -78,13 +75,11 @@ public class Board : MonoBehaviour
         string debugStr = "";
         string delimiter = ",";
         string border = "|";
-        for (int y = 0; y < y_length; y++)
+        for (int y = y_length - 1; y >= 0; y--)
         {
             debugStr += border;
-            for (int x = 0; x < x_length; x++)
-            {
+            for (int x = 0; x < x_length; x++) 
                 debugStr += boardState[x, y] + ",";
-            }
             debugStr += border + "\n";
         }
         return debugStr;
@@ -105,55 +100,52 @@ public class Board : MonoBehaviour
         var R = GameManager.instance.GetR;
         
         // Check row and column for a placed coin and then check upcoming coins
-        for (int y = y_length - 1; y > y_length - R; y--)
+        for (int x = 0; x < x_length; x++)
         {
-            for (int x = 0; x < x_length; x++)
+            for (int y = 0; y < y_length - R; y++)
             {
                 if (!boardState[x, y].isEmpty)
                 {
-                    var winCondition = 1;
-                    for (int k = 1; k <= R - 1; k++)
+                    using (var check = new WinCheck(R))
                     {
-                        if (boardState[x, y] == boardState[x, y - k])
+                        check.Sample(boardState[x, y]);
+                        for (int k = 1; k < R; k++) check.Sample(boardState[x, y + k]);
+                        
+                        if (check.won)
                         {
-                            winCondition++;
+                            Debug.Log($"Vertical winner found - Player {boardState[x, y]}");
+                            return true;
                         }
-
-                        if (winCondition != R) continue;
-                        Debug.Log($"Vertical winner found - Player {boardState[x, y]}");
-                        return true;
                     }
                 }
             }
         }
-        //Debug.Log($"Winner NOT found Vertically");
         return false;
     }
 
     private bool HorizontalWinCheck()
     {
         var y_length = GameManager.instance.GetYLength;
+        var x_length = GameManager.instance.GetXLength;
         var R = GameManager.instance.GetR;
      
         // Check row and column for a placed coin and then check upcoming coins
         for (int y = 0; y < y_length; y++)
         {
-            for (int x = 0; x < R; x++)
+            for (int x = 0; x < x_length - R; x++)
             {
                 if (!boardState[x, y].isEmpty)
                 {
-                    var winCondition = 1;
-                    for (int k = 0; k < R - 1; k++)
+                    using (var check = new WinCheck(R))
                     {
-                        if (boardState[x, y] == boardState[x + k + 1, y])
+                        check.Sample(boardState[x, y]);
+                        for (int k = 1; k < R; k++) check.Sample(boardState[x + k, y]);
+                        
+                        if (check.won)
                         {
-                            winCondition++;
+                            Debug.Log($"Winner found horizontally - Player {boardState[x, y]}");
+                            return true;
                         }
-                    }
-                    if (winCondition == R)
-                    {
-                        Debug.Log($"Winner found horizontally - Player {boardState[x, y]}");
-                        return true;
                     }
                 }
             }
@@ -167,99 +159,42 @@ public class Board : MonoBehaviour
         var y_length = GameManager.instance.GetYLength;
         var R = GameManager.instance.GetR;
 
-        for (int y = y_length - 1; y >= R - 1; y--)
-        {
-            for (int x = 0; x < x_length - R; x++)
+        // bottom-left
+        for (int y = R - 1; y < y_length; y++)
+        for (int x = R - 1; x < x_length; x++)
+            if (!boardState[x, y].isEmpty)
             {
-                if (!boardState[x, y].isEmpty)
+                using (var check = new WinCheck(R))
                 {
-                    var winCondition = 1;
-                    for (int k = 1; k < R; k++)
-                    {
-                        if (boardState[x + k, y - k] == boardState[x, y])
-                        {
-                            winCondition++;
-                        }
-                    }
+                    check.Sample(boardState[x, y]);
+                    for (int k = 1; k < R; k++) check.Sample(boardState[x - k, y - k]);
 
-                    if (winCondition == R)
+                    if (check.won)
                     {
                         Debug.Log($"Winner found Diagonally - Player {boardState[x, y]}");
                         return true;
                     }
                 }
             }
-        }
-        
-        for (int y = 0; y <= y_length - R; y++)
-        {
-            for (int x = 0; x < x_length - R; x++)
-            {
-                if (!boardState[x, y].isEmpty)
-                {
-                    var winCondition = 1;
-                    for (int k = 1; k < R; k++)
-                    {
-                        if (boardState[x + k, y + k] == boardState[x, y])
-                        {
-                            winCondition++;
-                        }
-                    }
 
-                    if (winCondition == R)
+        // top-left
+        for (int y = 0; y < y_length - R; y++)
+        for (int x = R - 1; x < x_length; x++)
+            if (!boardState[x, y].isEmpty)
+            {
+                using (var check = new WinCheck(R))
+                {
+                    check.Sample(boardState[x, y]);
+                    for (int k = 1; k < R; k++) check.Sample(boardState[x - k, y + k]);
+
+                    if (check.won)
                     {
                         Debug.Log($"Winner found Diagonally - Player {boardState[x, y]}");
                         return true;
                     }
                 }
             }
-        }
-        for (int y = 0; y <= y_length - R; y++)
-        {
-            for (int x = x_length - 1; x >= x_length - R; x--)
-            {
-                if (!boardState[x, y].isEmpty)
-                {
-                    var winCondition = 1;
-                    for (int k = 1; k < R; k++)
-                    {
-                        if (boardState[x - k, y + k] == boardState[x, y])
-                        {
-                            winCondition++;
-                        }
-                    }
 
-                    if (winCondition == R)
-                    {
-                        Debug.Log($"Winner found Diagonally - Player {boardState[x, y]}");
-                        return true;
-                    }
-                }
-            }
-        }
-        for (int y = y_length - 1; y > y_length - R; y--)
-        {
-            for (int x = x_length - 1; x >= x_length - R; x--)
-            {
-                if (!boardState[x, y].isEmpty)
-                {
-                    var winCondition = 1;
-                    for (int k = 1; k < R; k++)
-                    {
-                        if (boardState[x - k, y - k] == boardState[x, y])
-                        {
-                            winCondition++;
-                        }
-                    }
-
-                    if (winCondition == R)
-                    {
-                        Debug.Log($"Winner found Diagonally - Player {boardState[x, y]}");
-                        return true;
-                    }
-                }
-            }
-        }
         return false;
     }
 }

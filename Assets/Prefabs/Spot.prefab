@@ -635,6 +635,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08a2a63961edd8640a619ce252508ceb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player1Coin: {fileID: 7103775815896524972}
+  player2Coin: {fileID: 5546843367966506585}
 --- !u!65 &-4069363715057882938
 BoxCollider:
   m_ObjectHideFlags: 0
