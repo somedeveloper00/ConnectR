@@ -44,9 +44,23 @@ public class GameManager : MonoBehaviour
             startingPoint.transform.position.y - rowIndex, startingPoint.transform.position.z);
         
         // switch to the other player for proper color coin to be placed next
-        SwitchPlayer();
+
     }
 
+    public void WinCheck(bool hasWinner)
+    {
+        if (hasWinner)
+        {
+            // Show Winner
+            
+        }
+        else
+        {
+            shouldKeepPlaying = true;
+            SwitchPlayer();
+        }
+    }
+    
     // only 2 players so they can be player 1 and player 2 and switched to one or the other depending on the current player value
     private void SwitchPlayer()
     {
