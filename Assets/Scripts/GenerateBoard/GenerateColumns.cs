@@ -5,9 +5,19 @@ using UnityEngine;
 
 public class GenerateColumns : MonoBehaviour
 {
+    public static GameObject[,] gameObjectBoardState;
+    
     [SerializeField] private GameObject column;
-    [SerializeField] private GameObject spot;
+    [SerializeField] private GameObject prefabSpot;
     private List<GameObject> _columns = new();
+
+    private void Awake()
+    {
+        var M = GameManager.instance.GetM;
+        var N = GameManager.instance.GetN;
+        gameObjectBoardState = new GameObject[N, M];
+    }
+
     private void Start()
     {
         // SpawnColumns();
@@ -27,12 +37,13 @@ public class GenerateColumns : MonoBehaviour
 
     private void SpawnIndividualSpots()
     {
-        for (int i = 0; i < GameManager.instance.GetN; i++)
+        for (int i = GameManager.instance.GetN - 1; i >= 0; i--)
         {
             for (int j = 0; j < GameManager.instance.GetM; j++)
             {
-                var spot = Instantiate(this.spot, new Vector3(3 - i, 1.15f + j), Quaternion.identity);
-                spot.name = $"{i},{j}";
+                var spot = Instantiate(prefabSpot, new Vector3(3 - i, 1.15f + j), Quaternion.identity);
+                spot.name = $"{j},{i}";
+                gameObjectBoardState[i, j] = spot;
             }
         }
     }

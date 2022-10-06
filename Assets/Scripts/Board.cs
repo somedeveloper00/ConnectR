@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
+    
     private int[,] boardState;
     public static Board instance;
     
@@ -13,7 +14,6 @@ public class Board : MonoBehaviour
     {
         var M = GameManager.instance.GetM;
         var N = GameManager.instance.GetN;
-        
         instance = this;
         boardState = new int[M, N];
         for (int i = 0; i < M; i++)
@@ -47,12 +47,14 @@ public class Board : MonoBehaviour
         return -1;
     }
 
+    // set the board state to show which player has a coin at the given position
+    // enable a game object in the scene to indicate whether coin is red or yellow
     public void DropCoinAtPosition(int x, int y, int playerCoin)
     {
         boardState[x, y] = playerCoin;
         Debug.Log(DebugBoard());
         // Win Check
-        CheckForWin();
+        GameManager.instance.WinCheck(CheckForWin());
     }
 
     private string DebugBoard()
