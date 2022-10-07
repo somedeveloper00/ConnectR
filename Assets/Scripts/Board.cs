@@ -9,12 +9,11 @@ public struct Cell
     public static bool operator ==(Cell c1, Cell c2) => c1.isEmpty == c2.isEmpty && c1.player == c2.player;
     public static bool operator !=(Cell c1, Cell c2) => !(c1 == c2);
 }
+
 public enum Player { A, B }
 
 public class Board : MonoBehaviour
 {
-
-    
     private Cell[,] boardState;
     public static Board instance;
     
@@ -106,16 +105,14 @@ public class Board : MonoBehaviour
             {
                 if (!boardState[x, y].isEmpty)
                 {
-                    using (var check = new WinCheck(R))
-                    {
-                        check.Sample(boardState[x, y]);
-                        for (int k = 1; k < R; k++) check.Sample(boardState[x, y + k]);
+                    using var check = new WinCheck(R);
+                    check.Sample(boardState[x, y]);
+                    for (int k = 1; k < R; k++) check.Sample(boardState[x, y + k]);
                         
-                        if (check.won)
-                        {
-                            Debug.Log($"Vertical winner found - Player {boardState[x, y]}");
-                            return true;
-                        }
+                    if (check.won)
+                    {
+                        Debug.Log($"Vertical winner found - Player {boardState[x, y]}");
+                        return true;
                     }
                 }
             }
@@ -136,16 +133,14 @@ public class Board : MonoBehaviour
             {
                 if (!boardState[x, y].isEmpty)
                 {
-                    using (var check = new WinCheck(R))
-                    {
-                        check.Sample(boardState[x, y]);
-                        for (int k = 1; k < R; k++) check.Sample(boardState[x + k, y]);
+                    using var check = new WinCheck(R);
+                    check.Sample(boardState[x, y]);
+                    for (int k = 1; k < R; k++) check.Sample(boardState[x + k, y]);
                         
-                        if (check.won)
-                        {
-                            Debug.Log($"Winner found horizontally - Player {boardState[x, y]}");
-                            return true;
-                        }
+                    if (check.won)
+                    {
+                        Debug.Log($"Winner found horizontally - Player {boardState[x, y]}");
+                        return true;
                     }
                 }
             }
@@ -164,16 +159,14 @@ public class Board : MonoBehaviour
         for (int x = R - 1; x < x_length; x++)
             if (!boardState[x, y].isEmpty)
             {
-                using (var check = new WinCheck(R))
-                {
-                    check.Sample(boardState[x, y]);
-                    for (int k = 1; k < R; k++) check.Sample(boardState[x - k, y - k]);
+                using var check = new WinCheck(R);
+                check.Sample(boardState[x, y]);
+                for (int k = 1; k < R; k++) check.Sample(boardState[x - k, y - k]);
 
-                    if (check.won)
-                    {
-                        Debug.Log($"Winner found Diagonally - Player {boardState[x, y]}");
-                        return true;
-                    }
+                if (check.won)
+                {
+                    Debug.Log($"Winner found Diagonally - Player {boardState[x, y]}");
+                    return true;
                 }
             }
 
