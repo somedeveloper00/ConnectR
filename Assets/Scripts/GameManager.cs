@@ -9,7 +9,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject redCoin;
     [SerializeField] private GameObject yellowCoin;
     [SerializeField] private int X_Length;
-    [SerializeField] private GameObject outOfBoundsError;
     public int GetXLength => X_Length;
     [SerializeField] private int Y_Length;
     public int GetYLength => Y_Length;
