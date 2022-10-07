@@ -20,19 +20,7 @@ public class GenerateColumns : MonoBehaviour
 
     private void Start()
     {
-        // SpawnColumns();
         SpawnIndividualSpots();
-    }
-
-    private void SpawnColumns()
-    {
-        for (int i = 0; i < GameManager.instance.GetXLength; i++)
-        {
-            var column = Instantiate(this.column, new Vector3(3 - i, 3.7f), Quaternion.identity);
-            column.transform.localScale = new Vector3(1, GameManager.instance.GetYLength, 1);
-            column.name = $"Column_{i}";
-            _columns.Add(column);
-        }
     }
 
     private void SpawnIndividualSpots()

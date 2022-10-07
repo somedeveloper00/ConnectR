@@ -9,12 +9,14 @@ public class SelectableCell : MonoBehaviour
     private int columnIndex;
     private int rowIndex;
 
+    // initialize column and row index for this cell
     public void Init(int column, int row)
     {
         columnIndex = column;
         rowIndex = row;
     }
 
+    // returns the actual coin game object based on the player 
     public GameObject GetPlayerGameObject(Player player)
     {
         switch (player)
