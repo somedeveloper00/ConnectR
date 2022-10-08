@@ -6,6 +6,8 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
+
+    [SerializeField] private GameObject turnID;
     [SerializeField] private GameObject redCoin;
     [SerializeField] private GameObject yellowCoin;
     [SerializeField] private int X_Length;
@@ -16,14 +18,22 @@ public class GameManager : MonoBehaviour
     public int GetR => R;
     private Player currentPlayer = Player.A;
     private bool shouldKeepPlaying = true;
+    private TurnID _turnID;
 
     private void Awake()
     {
         instance = this;
+        _turnID = turnID.GetComponent<TurnID>();
+    }
+
+    private void Start()
+    {
+        _turnID.UpdateTurnIDText(currentPlayer);
     }
 
     public void HandleUserInput(string columnIndex)
     {
+    
         Debug.Log($"clicked on column {columnIndex}");
         
         if (int.TryParse(columnIndex, out var columnParsed))
@@ -47,6 +57,7 @@ public class GameManager : MonoBehaviour
     }
     public void HandleColumnClick(int columnIndex)
     {
+        _turnID.UpdateTurnIDText(currentPlayer);
         Debug.Log($"clicked on column {columnIndex}");
         // Drop a new coin at the bottom most valid row
         var rowIndex = Board.instance.FindRowForNewCoin(columnIndex);
@@ -97,5 +108,7 @@ public class GameManager : MonoBehaviour
                 currentPlayer = Player.A;
                 break;
         }
+        
+        _turnID.UpdateTurnIDText(currentPlayer);
     }
 }

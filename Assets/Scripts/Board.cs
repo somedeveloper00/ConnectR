@@ -18,7 +18,7 @@ public class Board : MonoBehaviour
     public static Board instance;
     
     // initialize variables in Awake because it runs before Start
-    private void Awake()
+    private void Start()
     {
         var y_length = GameManager.instance.GetYLength;
         var x_length = GameManager.instance.GetXLength;
@@ -31,12 +31,14 @@ public class Board : MonoBehaviour
         {
             boardState[x, y].isEmpty = true;
         }
-    }
-
-    private void Start()
-    {
+        
         Debug.Log(DebugBoard());
     }
+
+    /*private void Start()
+    {
+        Debug.Log(DebugBoard());
+    }*/
     
     // starting at the bottom of the column, check if this spot has a 0 for a value
     // if a 0 is found then a coin can go there else it is full

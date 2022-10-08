@@ -3,7 +3,9 @@ guid: 6fb7d629b4a2dd44ea9459e893ca6a7d
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - redCoin: {fileID: 919132149155446097, guid: d34da4b1623ce2a4aa9a67a8049ca2ae, type: 3}
+  - yellowCoin: {fileID: 919132149155446097, guid: bdd9be44907e2c94983d0de618619103, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
