@@ -6,6 +6,8 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
+    public static Board board;
+    [SerializeField] private GameObject turnID;
     [SerializeField] private GameObject redCoin;
     [SerializeField] private GameObject yellowCoin;
     [SerializeField] private int X_Length;
@@ -14,16 +16,39 @@ public class GameManager : MonoBehaviour
     public int GetYLength => Y_Length;
     [SerializeField] private int R;
     public int GetR => R;
-    private Player currentPlayer = Player.A;
+    [SerializeField] private Player player1;
+    [SerializeField] private Player player2;
+    private PlayerType currentPlayer = PlayerType.A;
     private bool shouldKeepPlaying = true;
+    private TurnID _turnID;
+    
 
     private void Awake()
     {
         instance = this;
     }
 
+    // Initialization function called when the GameManager in the scene gets set active
+    public void Init(int n, int m, int r)
+    {
+        _turnID = turnID.GetComponent<TurnID>();
+        _turnID.UpdateTurnIDText(currentPlayer);
+        X_Length = n;
+        Y_Length = m;
+        R = r;
+        new Board(); // create the board singleton
+        GetCurrentPlayer().GetPlayerInput();
+    }
+
+    [ContextMenu("Test Undo")]
+    public void TestUndo()
+    {
+        Board.instance.Undo();
+    }
+    
     public void HandleUserInput(string columnIndex)
     {
+    
         Debug.Log($"clicked on column {columnIndex}");
         
         if (int.TryParse(columnIndex, out var columnParsed))
@@ -37,6 +62,7 @@ public class GameManager : MonoBehaviour
                     // Coin should go to the current column clicked at the first empty valid row
                     PlaceCoinOnBoard(columnParsed, rowIndex);
                     Board.instance.DropCoinAtPosition(columnParsed, rowIndex, currentPlayer);
+                    
                 }   
             }
         }
@@ -47,6 +73,7 @@ public class GameManager : MonoBehaviour
     }
     public void HandleColumnClick(int columnIndex)
     {
+        _turnID.UpdateTurnIDText(currentPlayer);
         Debug.Log($"clicked on column {columnIndex}");
         // Drop a new coin at the bottom most valid row
         var rowIndex = Board.instance.FindRowForNewCoin(columnIndex);
@@ -66,7 +93,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("CurrentPlayer: " + currentPlayer);
         
         GenerateColumns.gameObjectBoardState[columnIndex, rowIndex]
-            .GetPlayerGameObject(currentPlayer)
+            .GetPlayerTypeGameObject(currentPlayer)
             .gameObject.SetActive(true);
     }
 
@@ -82,6 +109,7 @@ public class GameManager : MonoBehaviour
         {
             shouldKeepPlaying = true;
             SwitchPlayer();
+            GetCurrentPlayer().GetPlayerInput();
         }
     }
     
@@ -90,12 +118,19 @@ public class GameManager : MonoBehaviour
     {
         switch (currentPlayer)
         {
-            case Player.A:
-                currentPlayer = Player.B;
+            case PlayerType.A:
+                currentPlayer = PlayerType.B;
                 break;
-            case Player.B:
-                currentPlayer = Player.A;
+            case PlayerType.B:
+                currentPlayer = PlayerType.A;
                 break;
         }
+        
+        _turnID.UpdateTurnIDText(currentPlayer);
+    }
+
+    public Player GetCurrentPlayer()
+    {
+        return currentPlayer == PlayerType.A ? player1 : player2;
     }
 }
