@@ -60,12 +60,28 @@ public class Board
         return -1;
     }
 
+    // if there is at least one empty space in a column it is a valid column
+    public List<int> GetAllValidColumns()
+    {
+        var x_length = GameManager.instance.GetXLength;
+        var y_length = GameManager.instance.GetYLength;
+        var validColumns = new List<int>();
+        for (int x = 0; x < x_length; x++)
+        {
+            if (boardState[x, y_length - 1].isEmpty)
+            {
+                validColumns.Add(x);
+            }
+        }
+        return validColumns;
+    }
+    
     // need to be able to go back to the previous board
     public void Undo()
     {
         boardState[allInputs.Last().x, allInputs.Last().y].isEmpty = true;
         allInputs.RemoveAt(allInputs.Count - 1);
-        DebugBoard();
+        // DebugBoard();
     }
 
     // set the board state to show which player has a coin at the given position
@@ -76,9 +92,9 @@ public class Board
         boardState[column, row].isEmpty = false;
         boardState[column, row].player = player;
 
-        DebugBoard();
+        // DebugBoard();
         // Win Check
-        GameManager.instance.WinCheck(CheckForWin());
+        // GameManager.instance.WinCheck(CheckForWin());
     }
 
     private void DebugBoard()
@@ -98,7 +114,8 @@ public class Board
         Debug.Log(debugStr);
     }
 
-    private bool CheckForWin()
+    // used also in minimax to detect winning states
+    public bool CheckForWin()
     {
         if (HorizontalWinCheck() || VerticalWinCheck() || DiagonalWinCheck())
             return true;

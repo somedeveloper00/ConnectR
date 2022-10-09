@@ -46,31 +46,6 @@ public class GameManager : MonoBehaviour
         Board.instance.Undo();
     }
     
-    public void HandleUserInput(string columnIndex)
-    {
-    
-        Debug.Log($"clicked on column {columnIndex}");
-        
-        if (int.TryParse(columnIndex, out var columnParsed))
-        {
-            if (columnParsed < GameManager.instance.GetXLength && columnParsed >= 0)
-            {
-                var rowIndex = Board.instance.FindRowForNewCoin(columnParsed);
-                Debug.Log("RowIndex " + rowIndex);
-                if (rowIndex != -1)
-                {
-                    // Coin should go to the current column clicked at the first empty valid row
-                    PlaceCoinOnBoard(columnParsed, rowIndex);
-                    Board.instance.DropCoinAtPosition(columnParsed, rowIndex, currentPlayer);
-                    
-                }   
-            }
-        }
-        else
-        {
-            Debug.Log("Input is not a number within the bounds of the board");
-        }
-    }
     public void HandleColumnClick(int columnIndex)
     {
         _turnID.UpdateTurnIDText(currentPlayer);
@@ -103,7 +78,7 @@ public class GameManager : MonoBehaviour
         {
             // Show Winner
             Debug.Log($"Player {currentPlayer} has won");
-            Debug.Break();
+            // Debug.Break();
         }
         else
         {

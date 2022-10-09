@@ -1,3 +1,4 @@
+using Game;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,7 +8,7 @@ public class TextInput : MonoBehaviour
 
     public void HandleTextInput()
     {
-        GameManager.instance.HandleUserInput(_textInput.text);
+        HandleUserInput.handleUserInputSelection(int.Parse(_textInput.text));
         _textInput.text = "";
     }
 }
