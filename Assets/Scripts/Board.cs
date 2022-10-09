@@ -97,7 +97,7 @@ public class Board
         // GameManager.instance.WinCheck(CheckForWin());
     }
 
-    private void DebugBoard()
+    public void DebugBoard()
     {
         var y_length = GameManager.instance.GetYLength;
         var x_length = GameManager.instance.GetXLength;
@@ -142,7 +142,7 @@ public class Board
                         
                     if (check.won)
                     {
-                        Debug.Log($"Vertical winner found - PlayerType {boardState[x, y]}");
+                        // Debug.Log($"Vertical winner found - PlayerType {boardState[x, y]}");
                         return true;
                     }
                 }
@@ -170,7 +170,7 @@ public class Board
                         
                     if (check.won)
                     {
-                        Debug.Log($"Winner found horizontally - PlayerType {boardState[x, y]}");
+                        // Debug.Log($"Winner found horizontally - PlayerType {boardState[x, y]}");
                         return true;
                     }
                 }
@@ -196,7 +196,7 @@ public class Board
 
                 if (check.won)
                 {
-                    Debug.Log($"Winner found Diagonally - PlayerType {boardState[x, y]}");
+                    // Debug.Log($"Winner found Diagonally - PlayerType {boardState[x, y]}");
                     return true;
                 }
             }
@@ -213,7 +213,7 @@ public class Board
 
                     if (check.won)
                     {
-                        Debug.Log($"Winner found Diagonally - PlayerType {boardState[x, y]}");
+                        // Debug.Log($"Winner found Diagonally - PlayerType {boardState[x, y]}");
                         return true;
                     }
                 }
