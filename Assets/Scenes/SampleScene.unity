@@ -757,6 +757,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isAi: 0
+  depth: 3
 --- !u!4 &153976589
 Transform:
   m_ObjectHideFlags: 0
@@ -3847,6 +3848,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isAi: 1
+  depth: 3
 --- !u!4 &1408572866
 Transform:
   m_ObjectHideFlags: 0

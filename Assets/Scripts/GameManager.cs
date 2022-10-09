@@ -58,6 +58,7 @@ public class GameManager : MonoBehaviour
             // Coin should go to the current column clicked at the first empty valid row
             PlaceCoinOnBoard(columnIndex, rowIndex);
             Board.instance.DropCoinAtPosition(columnIndex, rowIndex, currentPlayer);
+            WinCheck(Board.instance.CheckForWin());
         }
     }
 
@@ -89,7 +90,7 @@ public class GameManager : MonoBehaviour
     }
     
     // only 2 players so they can be player 1 and player 2 and switched to one or the other depending on the current player value
-    private void SwitchPlayer()
+    public void SwitchPlayer()
     {
         switch (currentPlayer)
         {
@@ -107,5 +108,10 @@ public class GameManager : MonoBehaviour
     public Player GetCurrentPlayer()
     {
         return currentPlayer == PlayerType.A ? player1 : player2;
+    }
+
+    public PlayerType GetCurrentPlayerType()
+    {
+        return currentPlayer;
     }
 }
