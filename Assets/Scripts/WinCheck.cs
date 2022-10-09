@@ -3,7 +3,7 @@
 public class WinCheck : IDisposable
 {
 	private int r;
-	private Cell cell;
+	private Cell firstCell; // first cell
 	private bool firstTime = true;
 
 	public bool won { get; private set; }
@@ -18,18 +18,17 @@ public class WinCheck : IDisposable
 		if (firstTime)
 		{
 			firstTime = false;
-			this.cell = cell;
+			this.firstCell = cell;
 			r--;
 			return;
 		}
 
-		if (this.cell == cell)
+		if (this.firstCell == cell)
 		{
 			r--;
 			if (r == 0)
 				won = true;
 		}
-		
 	}
 
 	public void Dispose() { }

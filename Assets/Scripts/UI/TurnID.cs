@@ -7,8 +7,8 @@ public class TurnID : MonoBehaviour
 {
     [SerializeField] private TMP_Text turnInfo;
 
-    public void UpdateTurnIDText(Player player)
+    public void UpdateTurnIDText(PlayerType player)
     {
-        turnInfo.text = player == Player.A ? "Turn: Player 1" : "Turn: Player 2";
+        turnInfo.text = player == PlayerType.A ? "Turn: Player 1" : "Turn: Player 2";
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using Game;
 using UnityEngine;
 
 public class SelectableCell : MonoBehaviour
@@ -17,13 +18,13 @@ public class SelectableCell : MonoBehaviour
     }
 
     // returns the actual coin game object based on the player 
-    public GameObject GetPlayerGameObject(Player player)
+    public GameObject GetPlayerTypeGameObject(PlayerType player)
     {
         switch (player)
         {
-            case Player.A:
+            case PlayerType.A:
                 return player1Coin;
-            case Player.B:
+            case PlayerType.B:
                 return player2Coin;
             default:
                 throw new ArgumentOutOfRangeException(nameof(player), player, null);
@@ -33,6 +34,6 @@ public class SelectableCell : MonoBehaviour
     // called when the user has pressed the mouse button while over the Collider
     private void OnMouseDown()
     {
-        GameManager.instance.HandleColumnClick(columnIndex);
+        HandleUserInput.handleUserInputSelection(columnIndex);
     }
 }

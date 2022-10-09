@@ -10,14 +10,7 @@ public class GenerateColumns : MonoBehaviour
     [SerializeField] private GameObject column;
     [SerializeField] private SelectableCell prefabSpot;
     private List<GameObject> _columns = new();
-
-    private void Awake()
-    {
-        var y_length = GameManager.instance.GetYLength;
-        var x_length = GameManager.instance.GetXLength;
-        gameObjectBoardState = new SelectableCell[x_length, y_length];
-    }
-
+    
     private void Start()
     {
         SpawnIndividualSpots();
@@ -25,6 +18,9 @@ public class GenerateColumns : MonoBehaviour
 
     private void SpawnIndividualSpots()
     {
+        var y_length = GameManager.instance.GetYLength;
+        var x_length = GameManager.instance.GetXLength;
+        gameObjectBoardState = new SelectableCell[x_length, y_length];
         for (int x = 0; x < GameManager.instance.GetXLength; x++)
         {
             for (int y = 0; y < GameManager.instance.GetYLength; y++)

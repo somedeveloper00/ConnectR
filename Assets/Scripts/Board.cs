@@ -1,24 +1,27 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public struct Cell
 {
     public bool isEmpty;
-    public Player player;
+    public PlayerType player;
 
     public override string ToString() => isEmpty ? "-" : player.ToString();
     public static bool operator ==(Cell c1, Cell c2) => c1.isEmpty == c2.isEmpty && c1.player == c2.player;
     public static bool operator !=(Cell c1, Cell c2) => !(c1 == c2);
 }
 
-public enum Player { A, B }
+public enum PlayerType { A, B }
 
-public class Board : MonoBehaviour
+public class Board 
 {
     private Cell[,] boardState;
     public static Board instance;
+    public List<Vector2Int> allInputs = new List<Vector2Int>();
     
     // initialize variables in Awake because it runs before Start
-    private void Start()
+    public Board()
     {
         var y_length = GameManager.instance.GetYLength;
         var x_length = GameManager.instance.GetXLength;
@@ -32,7 +35,7 @@ public class Board : MonoBehaviour
             boardState[x, y].isEmpty = true;
         }
         
-        Debug.Log(DebugBoard());
+        DebugBoard();
     }
 
     /*private void Start()
@@ -57,19 +60,28 @@ public class Board : MonoBehaviour
         return -1;
     }
 
+    // need to be able to go back to the previous board
+    public void Undo()
+    {
+        boardState[allInputs.Last().x, allInputs.Last().y].isEmpty = true;
+        allInputs.RemoveAt(allInputs.Count - 1);
+        DebugBoard();
+    }
+
     // set the board state to show which player has a coin at the given position
     // enable a game object in the scene to indicate whether coin is red or yellow
-    public void DropCoinAtPosition(int column, int row, Player player)
+    public void DropCoinAtPosition(int column, int row, PlayerType player)
     {
+        allInputs.Add(new Vector2Int(column, row)); // every position of all coins placed on board
         boardState[column, row].isEmpty = false;
         boardState[column, row].player = player;
-        
-        Debug.Log(DebugBoard());
+
+        DebugBoard();
         // Win Check
         GameManager.instance.WinCheck(CheckForWin());
     }
 
-    private string DebugBoard()
+    private void DebugBoard()
     {
         var y_length = GameManager.instance.GetYLength;
         var x_length = GameManager.instance.GetXLength;
@@ -83,7 +95,7 @@ public class Board : MonoBehaviour
                 debugStr += boardState[x, y] + ",";
             debugStr += border + "\n";
         }
-        return debugStr;
+        Debug.Log(debugStr);
     }
 
     private bool CheckForWin()
@@ -113,7 +125,7 @@ public class Board : MonoBehaviour
                         
                     if (check.won)
                     {
-                        Debug.Log($"Vertical winner found - Player {boardState[x, y]}");
+                        Debug.Log($"Vertical winner found - PlayerType {boardState[x, y]}");
                         return true;
                     }
                 }
@@ -141,7 +153,7 @@ public class Board : MonoBehaviour
                         
                     if (check.won)
                     {
-                        Debug.Log($"Winner found horizontally - Player {boardState[x, y]}");
+                        Debug.Log($"Winner found horizontally - PlayerType {boardState[x, y]}");
                         return true;
                     }
                 }
@@ -167,7 +179,7 @@ public class Board : MonoBehaviour
 
                 if (check.won)
                 {
-                    Debug.Log($"Winner found Diagonally - Player {boardState[x, y]}");
+                    Debug.Log($"Winner found Diagonally - PlayerType {boardState[x, y]}");
                     return true;
                 }
             }
@@ -184,7 +196,7 @@ public class Board : MonoBehaviour
 
                     if (check.won)
                     {
-                        Debug.Log($"Winner found Diagonally - Player {boardState[x, y]}");
+                        Debug.Log($"Winner found Diagonally - PlayerType {boardState[x, y]}");
                         return true;
                     }
                 }
