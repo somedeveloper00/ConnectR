@@ -68,7 +68,7 @@ public class Board
         var validColumns = new List<int>();
         for (int x = 0; x < x_length; x++)
         {
-            if (boardState[x, y_length - 1].isEmpty)
+            if (boardState[x, y_length - 1].isEmpty) // check top most row for an empty slot
             {
                 validColumns.Add(x);
             }
@@ -132,7 +132,7 @@ public class Board
         // Check row and column for a placed coin and then check upcoming coins
         for (int x = 0; x < x_length; x++)
         {
-            for (int y = 0; y < y_length - R; y++)
+            for (int y = 0; y <= y_length - R; y++)
             {
                 if (!boardState[x, y].isEmpty)
                 {
@@ -160,11 +160,11 @@ public class Board
         // Check row and column for a placed coin and then check upcoming coins
         for (int y = 0; y < y_length; y++)
         {
-            for (int x = 0; x < x_length - R; x++)
+            for (int x = 0; x <= x_length - R; x++)
             {
                 if (!boardState[x, y].isEmpty)
                 {
-                    using var check = new WinCheck(R);
+                    using var check = new WinCheck(R); // creating a check object
                     check.Sample(boardState[x, y]);
                     for (int k = 1; k < R; k++) check.Sample(boardState[x + k, y]);
                         
@@ -179,6 +179,24 @@ public class Board
         return false;
     }
 
+    public List<Vector2Int> GetCellsNeighbors(Vector2Int targetCell)
+    {
+        var r = new List<Vector2Int>();
+        
+        for(int x = -1; x <= 1; x++)
+            for (int y = -1; y <= 1; y++)
+            {
+                var neighbor = new Vector2Int(targetCell.x + x, targetCell.y + y);
+                if(neighbor.x < 0 || neighbor.x >= GameManager.instance.GetXLength) continue;
+                if(neighbor.y < 0 || neighbor.y >= GameManager.instance.GetYLength) continue;
+                if(neighbor == targetCell) continue;
+                
+                r.Add(neighbor);
+            }
+
+        return r;
+    }
+    
     private bool DiagonalWinCheck()
     {
         var x_length = GameManager.instance.GetXLength;
@@ -220,5 +238,10 @@ public class Board
             }
 
         return false;
+    }
+
+    public Cell[,] GetCells()
+    {
+        return boardState;
     }
 }

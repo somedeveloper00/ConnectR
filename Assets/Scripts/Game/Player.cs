@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Game;
+using Unity.VisualScripting;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
@@ -52,7 +53,7 @@ public class Player : MonoBehaviour
             Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
             GameManager.instance.SwitchPlayer();
             
-            var heuristicValueOfCurrentState = PerformMinimax(depth, false, ref actingPlayerType);
+            var heuristicValueOfCurrentState = PerformMinimax(depth, false, float.MinValue, float.MaxValue, ref actingPlayerType);
             Debug.Log($"Heuristic Value {heuristicValueOfCurrentState} columnIndex {column}");
             Board.instance.Undo();
             GameManager.instance.SwitchPlayer();
@@ -73,7 +74,7 @@ public class Player : MonoBehaviour
     }
 
     // calculate utility of state
-    private float PerformMinimax(int depth, bool isMaximizing, ref PlayerType actingPlayerType)
+    private float PerformMinimax(int depth, bool isMaximizing, float alpha, float beta, ref PlayerType actingPlayerType)
     {
         if (_stopwatch.Elapsed.TotalSeconds >= 1) ranOutOfTime = true;
 
@@ -83,7 +84,7 @@ public class Player : MonoBehaviour
             bool actingPlayerWon = isTerminalState && GameManager.instance.GetCurrentPlayerType() != actingPlayerType;
             bool opponentPlayerWon = isTerminalState && GameManager.instance.GetCurrentPlayerType() == actingPlayerType;
             
-            var h=  HeuristicValueForState(actingPlayerWon, opponentPlayerWon, ref actingPlayerType);
+            var h=  HeuristicValueForState(actingPlayerWon, opponentPlayerWon, ref actingPlayerType, depth);
             // if (isTerminalState)
             // {
             //     Board.instance.DebugBoard();
@@ -105,13 +106,19 @@ public class Player : MonoBehaviour
                 var rowIndex = Board.instance.FindRowForNewCoin(column);
                 Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
                 GameManager.instance.SwitchPlayer();
-                var heuristicValueOfCurrentState = PerformMinimax(depth - 1, false, ref actingPlayerType);
+                // alpha = lowest value found
+                // beta = highest value found
+                var heuristicValueOfCurrentState = PerformMinimax(depth - 1, false, alpha, beta, ref actingPlayerType);
                 Board.instance.Undo();
                 GameManager.instance.SwitchPlayer();
                 if (heuristicValueOfCurrentState > value)
                 {
                     value = heuristicValueOfCurrentState;
                 }
+
+                if (value >= beta) break;
+
+                alpha = Mathf.Max(alpha, value);
             }
 
             return value;
@@ -128,32 +135,77 @@ public class Player : MonoBehaviour
                 var rowIndex = Board.instance.FindRowForNewCoin(column);
                 Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
                 GameManager.instance.SwitchPlayer();
-                var heuristicValueOfCurrentState = PerformMinimax(depth - 1, true, ref actingPlayerType);
+                var heuristicValueOfCurrentState = PerformMinimax(depth - 1,  true, alpha, beta,ref actingPlayerType);
                 Board.instance.Undo();
                 GameManager.instance.SwitchPlayer();
                 if (heuristicValueOfCurrentState < value)
                 {
                     value = heuristicValueOfCurrentState;
                 }
-            }
+                if (value <= alpha) break;
 
+                beta = Mathf.Min(beta, value);
+            }
+            
             return value;
         }
     }
 
     // assign a heuristic value for a given state
-    private float HeuristicValueForState(bool actingPlayerWon, bool opponentWon, ref PlayerType actingPlayerType)
+    private float HeuristicValueForState(bool actingPlayerWon, bool opponentWon, ref PlayerType actingPlayerType, int depth)
     {
-        if (actingPlayerWon) return float.MaxValue;
-        if (opponentWon) return float.MinValue;
-        
-        // return heuristic value for current state of the board
+        if (actingPlayerWon)
+        {
+            return depth * 100_000_000;
+        }
+
+        if (opponentWon)
+        {
+            return depth * -100_000_000;
+        }
+// return heuristic value for current state of the board
         float h = 0;
+
+        int actingPlayerConnectedNeighbors = 0;
+        int opponentPlayerConnectedNeighbors = 0;
+
+        for (int x = 0; x < GameManager.instance.GetXLength; x++)
+        for (int y = 0; y < GameManager.instance.GetYLength; y++)
+        {
+            var currentCell = Board.instance.GetCells()[x, y];
+            
+            if(currentCell.isEmpty) continue;
+
+            // get acting players' neighbors
+            if (currentCell.player == actingPlayerType)
+            {
+                var n = Board.instance.GetCellsNeighbors(new Vector2Int(x, y));
+                foreach (var neighbor in n)
+                {
+                    if (Board.instance.GetCells()[neighbor.x, neighbor.y].player == actingPlayerType)
+                        actingPlayerConnectedNeighbors++;
+                }
+            }
+            // get opponent' neighbors
+            else
+            {
+                var n = Board.instance.GetCellsNeighbors(new Vector2Int(x, y));
+                foreach (var neighbor in n)
+                {
+                    if (Board.instance.GetCells()[neighbor.x, neighbor.y].player != actingPlayerType)
+                        opponentPlayerConnectedNeighbors++;
+                }
+            }
+        }
         
 
-        return 0;
+        h += 2 * (actingPlayerConnectedNeighbors - opponentPlayerConnectedNeighbors);
+        
+        // do other things to h...
+        
+        return h;
     }
-
+    
     // 
     public void SetPlayerToAi(bool isAi)
     {
