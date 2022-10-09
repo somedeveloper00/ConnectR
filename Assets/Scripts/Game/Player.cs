@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Game;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 public class Player : MonoBehaviour
@@ -10,6 +12,8 @@ public class Player : MonoBehaviour
     [SerializeField] private int depth = 5;
     private float boardStateUtility; // value for the current board state used in min & max choices
     private int bestMoveSeenSoFar; // Column that represents the best play based off board
+    private Stopwatch _stopwatch = new Stopwatch();
+    private bool ranOutOfTime = false;
     
     public void DropCoin(int x)
     {
@@ -34,6 +38,7 @@ public class Player : MonoBehaviour
     // return the column index to drop coin
     private int GetActionFromMiniMax()
     {
+        _stopwatch.Restart();
         // MAX get all possible moves
         var possibleColumns = Board.instance.GetAllValidColumns();
         var value = float.MinValue;
@@ -44,14 +49,24 @@ public class Player : MonoBehaviour
             var rowIndex = Board.instance.FindRowForNewCoin(column);
             Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
             GameManager.instance.SwitchPlayer();
+            
             var heuristicValueOfCurrentState = PerformMinimax(depth, false);
+            Debug.Log($"Heuristic Value {heuristicValueOfCurrentState} columnIndex {column} rowIndex {rowIndex}");
             Board.instance.Undo();
+            GameManager.instance.SwitchPlayer();
             if (heuristicValueOfCurrentState > value)
             {
                 value = heuristicValueOfCurrentState;
                 bestColumn = column;
             }
         }
+
+        if (ranOutOfTime)
+        {
+            Debug.LogWarning("Ran our of time");
+            ranOutOfTime = false;
+        }
+        
         return bestColumn;
     }
 
@@ -59,7 +74,11 @@ public class Player : MonoBehaviour
     private float PerformMinimax(int depth, bool isMaximizing)
     {
         var checkWin = Board.instance.CheckForWin();
-        if (depth == 0 || checkWin)
+        if (_stopwatch.Elapsed.TotalSeconds >= 1)
+        {
+            ranOutOfTime = true;
+        }
+        if (depth == 0 || checkWin || _stopwatch.Elapsed.TotalSeconds >= 1)
         {
             return HeuristicValueForState(checkWin);
         }
@@ -77,6 +96,7 @@ public class Player : MonoBehaviour
                 GameManager.instance.SwitchPlayer();
                 var heuristicValueOfCurrentState = PerformMinimax(depth - 1, false);
                 Board.instance.Undo();
+                GameManager.instance.SwitchPlayer();
                 if (heuristicValueOfCurrentState > value)
                 {
                     value = heuristicValueOfCurrentState;
@@ -97,8 +117,9 @@ public class Player : MonoBehaviour
                 var rowIndex = Board.instance.FindRowForNewCoin(column);
                 Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
                 GameManager.instance.SwitchPlayer();
-                var heuristicValueOfCurrentState = PerformMinimax(depth - 1, true);
+                var heuristicValueOfCurrentState = -PerformMinimax(depth - 1, true);
                 Board.instance.Undo();
+                GameManager.instance.SwitchPlayer();
                 if (heuristicValueOfCurrentState < value)
                 {
                     value = heuristicValueOfCurrentState;
