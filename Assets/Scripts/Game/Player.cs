@@ -38,6 +38,8 @@ public class Player : MonoBehaviour
     // return the column index to drop coin
     private int GetActionFromMiniMax()
     {
+        var actingPlayerType = GameManager.instance.GetCurrentPlayerType();
+        Debug.Log($"AI starting... {actingPlayerType}");
         _stopwatch.Restart();
         // MAX get all possible moves
         var possibleColumns = Board.instance.GetAllValidColumns();
@@ -50,8 +52,8 @@ public class Player : MonoBehaviour
             Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
             GameManager.instance.SwitchPlayer();
             
-            var heuristicValueOfCurrentState = PerformMinimax(depth, false);
-            Debug.Log($"Heuristic Value {heuristicValueOfCurrentState} columnIndex {column} rowIndex {rowIndex}");
+            var heuristicValueOfCurrentState = PerformMinimax(depth, false, ref actingPlayerType);
+            Debug.Log($"Heuristic Value {heuristicValueOfCurrentState} columnIndex {column}");
             Board.instance.Undo();
             GameManager.instance.SwitchPlayer();
             if (heuristicValueOfCurrentState > value)
@@ -71,16 +73,25 @@ public class Player : MonoBehaviour
     }
 
     // calculate utility of state
-    private float PerformMinimax(int depth, bool isMaximizing)
+    private float PerformMinimax(int depth, bool isMaximizing, ref PlayerType actingPlayerType)
     {
-        var checkWin = Board.instance.CheckForWin();
-        if (_stopwatch.Elapsed.TotalSeconds >= 1)
+        if (_stopwatch.Elapsed.TotalSeconds >= 1) ranOutOfTime = true;
+
+        var isTerminalState = Board.instance.CheckForWin();
+        if (depth == 0 || isTerminalState || _stopwatch.Elapsed.TotalSeconds >= 1)
         {
-            ranOutOfTime = true;
-        }
-        if (depth == 0 || checkWin || _stopwatch.Elapsed.TotalSeconds >= 1)
-        {
-            return HeuristicValueForState(checkWin);
+            bool actingPlayerWon = isTerminalState && GameManager.instance.GetCurrentPlayerType() != actingPlayerType;
+            bool opponentPlayerWon = isTerminalState && GameManager.instance.GetCurrentPlayerType() == actingPlayerType;
+            
+            var h=  HeuristicValueForState(actingPlayerWon, opponentPlayerWon, ref actingPlayerType);
+            // if (isTerminalState)
+            // {
+            //     Board.instance.DebugBoard();
+            //     Debug.Log($"heuristic: {h}");
+            // }
+
+            return h;
+
         }
 
         if (isMaximizing)
@@ -94,7 +105,7 @@ public class Player : MonoBehaviour
                 var rowIndex = Board.instance.FindRowForNewCoin(column);
                 Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
                 GameManager.instance.SwitchPlayer();
-                var heuristicValueOfCurrentState = PerformMinimax(depth - 1, false);
+                var heuristicValueOfCurrentState = PerformMinimax(depth - 1, false, ref actingPlayerType);
                 Board.instance.Undo();
                 GameManager.instance.SwitchPlayer();
                 if (heuristicValueOfCurrentState > value)
@@ -117,7 +128,7 @@ public class Player : MonoBehaviour
                 var rowIndex = Board.instance.FindRowForNewCoin(column);
                 Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
                 GameManager.instance.SwitchPlayer();
-                var heuristicValueOfCurrentState = -PerformMinimax(depth - 1, true);
+                var heuristicValueOfCurrentState = PerformMinimax(depth - 1, true, ref actingPlayerType);
                 Board.instance.Undo();
                 GameManager.instance.SwitchPlayer();
                 if (heuristicValueOfCurrentState < value)
@@ -131,10 +142,14 @@ public class Player : MonoBehaviour
     }
 
     // assign a heuristic value for a given state
-    private float HeuristicValueForState(bool didPlayerWin)
+    private float HeuristicValueForState(bool actingPlayerWon, bool opponentWon, ref PlayerType actingPlayerType)
     {
-        // if currently acting player has won then return positive infinity
-        if (didPlayerWin) return float.MaxValue;
+        if (actingPlayerWon) return float.MaxValue;
+        if (opponentWon) return float.MinValue;
+        
+        // return heuristic value for current state of the board
+        float h = 0;
+        
 
         return 0;
     }

@@ -49,10 +49,9 @@ public class GameManager : MonoBehaviour
     public void HandleColumnClick(int columnIndex)
     {
         _turnID.UpdateTurnIDText(currentPlayer);
-        Debug.Log($"clicked on column {columnIndex}");
+        Debug.Log($"player {currentPlayer} clicked on column {columnIndex}");
         // Drop a new coin at the bottom most valid row
         var rowIndex = Board.instance.FindRowForNewCoin(columnIndex);
-        Debug.Log("RowIndex: " + rowIndex);
         if (rowIndex != -1)
         {
             // Coin should go to the current column clicked at the first empty valid row
@@ -65,9 +64,6 @@ public class GameManager : MonoBehaviour
     // Create the coin game object and place it in the right spot in the board
     private void PlaceCoinOnBoard(int columnIndex, int rowIndex)
     {
-        Debug.Log($"ColumnIndex: {columnIndex} | RowIndex: {rowIndex}");
-        Debug.Log("CurrentPlayer: " + currentPlayer);
-        
         GenerateColumns.gameObjectBoardState[columnIndex, rowIndex]
             .GetPlayerTypeGameObject(currentPlayer)
             .gameObject.SetActive(true);
@@ -79,7 +75,7 @@ public class GameManager : MonoBehaviour
         {
             // Show Winner
             Debug.Log($"Player {currentPlayer} has won");
-            // Debug.Break();
+            Debug.Break();
         }
         else
         {
