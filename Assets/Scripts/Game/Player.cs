@@ -39,24 +39,25 @@ public class Player : MonoBehaviour
     // return the column index to drop coin
     private int GetActionFromMiniMax()
     {
-        var actingPlayerType = GameManager.instance.GetCurrentPlayerType();
+        var actingPlayerType = GameManager.instance.board.GetCurrentPlayerType();
         Debug.Log($"AI starting... {actingPlayerType}");
+        
         _stopwatch.Restart();
+        
         // MAX get all possible moves
-        var possibleColumns = Board.instance.GetAllValidColumns();
+        var board = GameManager.instance.board;
+        var possibleColumns = board.GetAllValidColumns();
         var value = float.MinValue;
         var bestColumn = 0;
         foreach (var column in possibleColumns)
         {
             // place a coin, check the heuristic of that move and then undo
-            var rowIndex = Board.instance.FindRowForNewCoin(column);
-            Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
-            GameManager.instance.SwitchPlayer();
+            var rowIndex = board.FindRowForNewCoin(column);
+            var newBoard = board.Clone();
+            newBoard.DropCoinAtPosition(column, rowIndex);
             
-            var heuristicValueOfCurrentState = PerformMinimax(depth, false, float.MinValue, float.MaxValue, ref actingPlayerType);
+            var heuristicValueOfCurrentState = PerformMinimax(newBoard, depth, false, float.MinValue, float.MaxValue, actingPlayerType);
             Debug.Log($"Heuristic Value {heuristicValueOfCurrentState} columnIndex {column}");
-            Board.instance.Undo();
-            GameManager.instance.SwitchPlayer();
             if (heuristicValueOfCurrentState > value)
             {
                 value = heuristicValueOfCurrentState;
@@ -74,22 +75,18 @@ public class Player : MonoBehaviour
     }
 
     // calculate utility of state
-    private float PerformMinimax(int depth, bool isMaximizing, float alpha, float beta, ref PlayerType actingPlayerType)
+    private float PerformMinimax(Board board, int depth, bool isMaximizing, float alpha, float beta, PlayerType actingPlayerType)
     {
         if (_stopwatch.Elapsed.TotalSeconds >= 1) ranOutOfTime = true;
 
-        var isTerminalState = Board.instance.CheckForWin();
+        var isTerminalState = board.CheckForWin();
         if (depth == 0 || isTerminalState || _stopwatch.Elapsed.TotalSeconds >= 1)
         {
-            bool actingPlayerWon = isTerminalState && GameManager.instance.GetCurrentPlayerType() != actingPlayerType;
-            bool opponentPlayerWon = isTerminalState && GameManager.instance.GetCurrentPlayerType() == actingPlayerType;
+            var currentPlayer = board.GetCurrentPlayerType();
+            bool actingPlayerWon = isTerminalState && currentPlayer != actingPlayerType;
+            bool opponentPlayerWon = isTerminalState && currentPlayer == actingPlayerType;
             
-            var h=  HeuristicValueForState(actingPlayerWon, opponentPlayerWon, ref actingPlayerType, depth);
-            // if (isTerminalState)
-            // {
-            //     Board.instance.DebugBoard();
-            //     Debug.Log($"heuristic: {h}");
-            // }
+            var h=  HeuristicValueForState(board, actingPlayerWon, opponentPlayerWon, actingPlayerType, depth);
 
             return h;
 
@@ -98,26 +95,24 @@ public class Player : MonoBehaviour
         if (isMaximizing)
         {
             // MAX get all possible moves
-            var possibleColumns = Board.instance.GetAllValidColumns();
+            var possibleColumns = board.GetAllValidColumns();
             var value = float.MinValue;
             foreach (var column in possibleColumns)
             {
                 // place a coin, check the heuristic of that move and then undo
-                var rowIndex = Board.instance.FindRowForNewCoin(column);
-                Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
-                GameManager.instance.SwitchPlayer();
-                // alpha = lowest value found
-                // beta = highest value found
-                var heuristicValueOfCurrentState = PerformMinimax(depth - 1, false, alpha, beta, ref actingPlayerType);
-                Board.instance.Undo();
-                GameManager.instance.SwitchPlayer();
+                var rowIndex = board.FindRowForNewCoin(column);
+                board.DropCoinAtPosition(column, rowIndex);
+                var heuristicValueOfCurrentState = PerformMinimax(board, depth - 1, false, alpha, beta, actingPlayerType);
+                board.Undo();
+                
                 if (heuristicValueOfCurrentState > value)
                 {
                     value = heuristicValueOfCurrentState;
                 }
 
+                // alpha = lowest value found
+                // beta = highest value found
                 if (value >= beta) break;
-
                 alpha = Mathf.Max(alpha, value);
             }
 
@@ -126,18 +121,17 @@ public class Player : MonoBehaviour
         else
         {
             // MIN get all possible moves
-            var possibleColumns = Board.instance.GetAllValidColumns();
+            var possibleColumns = board.GetAllValidColumns();
             var value = float.MaxValue;
             
             foreach (var column in possibleColumns)
             {
                 // place a coin, check the heuristic of that move and then undo
-                var rowIndex = Board.instance.FindRowForNewCoin(column);
-                Board.instance.DropCoinAtPosition(column, rowIndex, GameManager.instance.GetCurrentPlayerType());
-                GameManager.instance.SwitchPlayer();
-                var heuristicValueOfCurrentState = PerformMinimax(depth - 1,  true, alpha, beta,ref actingPlayerType);
-                Board.instance.Undo();
-                GameManager.instance.SwitchPlayer();
+                var rowIndex = board.FindRowForNewCoin(column);
+                board.DropCoinAtPosition(column, rowIndex);
+                var heuristicValueOfCurrentState = PerformMinimax(board, depth - 1,  true, alpha, beta, actingPlayerType);
+                board.Undo();
+                
                 if (heuristicValueOfCurrentState < value)
                 {
                     value = heuristicValueOfCurrentState;
@@ -152,7 +146,7 @@ public class Player : MonoBehaviour
     }
 
     // assign a heuristic value for a given state
-    private float HeuristicValueForState(bool actingPlayerWon, bool opponentWon, ref PlayerType actingPlayerType, int depth)
+    private float HeuristicValueForState(Board board, bool actingPlayerWon, bool opponentWon, PlayerType actingPlayerType, int depth)
     {
         if (actingPlayerWon)
         {
@@ -163,7 +157,8 @@ public class Player : MonoBehaviour
         {
             return depth * -100_000_000;
         }
-// return heuristic value for current state of the board
+
+        // return heuristic value for current state of the board
         float h = 0;
 
         int actingPlayerConnectedNeighbors = 0;
@@ -172,27 +167,27 @@ public class Player : MonoBehaviour
         for (int x = 0; x < GameManager.instance.GetXLength; x++)
         for (int y = 0; y < GameManager.instance.GetYLength; y++)
         {
-            var currentCell = Board.instance.GetCells()[x, y];
+            var currentCell = board.GetCells()[x, y];
             
             if(currentCell.isEmpty) continue;
 
             // get acting players' neighbors
             if (currentCell.player == actingPlayerType)
             {
-                var n = Board.instance.GetCellsNeighbors(new Vector2Int(x, y));
+                var n = board.GetCellsNeighbors(new Vector2Int(x, y));
                 foreach (var neighbor in n)
                 {
-                    if (Board.instance.GetCells()[neighbor.x, neighbor.y].player == actingPlayerType)
+                    if (board.GetCells()[neighbor.x, neighbor.y].player == actingPlayerType)
                         actingPlayerConnectedNeighbors++;
                 }
             }
             // get opponent' neighbors
             else
             {
-                var n = Board.instance.GetCellsNeighbors(new Vector2Int(x, y));
+                var n = board.GetCellsNeighbors(new Vector2Int(x, y));
                 foreach (var neighbor in n)
                 {
-                    if (Board.instance.GetCells()[neighbor.x, neighbor.y].player != actingPlayerType)
+                    if (board.GetCells()[neighbor.x, neighbor.y].player != actingPlayerType)
                         opponentPlayerConnectedNeighbors++;
                 }
             }
@@ -206,7 +201,6 @@ public class Player : MonoBehaviour
         return h;
     }
     
-    // 
     public void SetPlayerToAi(bool isAi)
     {
         this.isAi = isAi;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -17,15 +18,22 @@ public enum PlayerType { A, B }
 public class Board 
 {
     private Cell[,] boardState;
-    public static Board instance;
     public List<Vector2Int> allInputs = new List<Vector2Int>();
+    
+    // return a duplicate of this board
+    public Board Clone()
+    {
+        var clone = new Board();
+        Array.Copy(boardState, clone.boardState, boardState.Length);
+        clone.allInputs = allInputs.GetRange(0, allInputs.Count);
+        return clone;
+    }
     
     // initialize variables in Awake because it runs before Start
     public Board()
     {
         var y_length = GameManager.instance.GetYLength;
         var x_length = GameManager.instance.GetXLength;
-        instance = this;
         
         // setting board state
         boardState = new Cell[x_length, y_length];
@@ -38,11 +46,6 @@ public class Board
         DebugBoard();
     }
 
-    /*private void Start()
-    {
-        Debug.Log(DebugBoard());
-    }*/
-    
     // starting at the bottom of the column, check if this spot has a 0 for a value
     // if a 0 is found then a coin can go there else it is full
     public int FindRowForNewCoin(int columnIndex)
@@ -86,15 +89,11 @@ public class Board
 
     // set the board state to show which player has a coin at the given position
     // enable a game object in the scene to indicate whether coin is red or yellow
-    public void DropCoinAtPosition(int column, int row, PlayerType player)
+    public void DropCoinAtPosition(int column, int row)
     {
         allInputs.Add(new Vector2Int(column, row)); // every position of all coins placed on board
         boardState[column, row].isEmpty = false;
-        boardState[column, row].player = player;
-
-        // DebugBoard();
-        // Win Check
-        // GameManager.instance.WinCheck(CheckForWin());
+        boardState[column, row].player = GetCurrentPlayerType();
     }
 
     public void DebugBoard()
@@ -243,5 +242,10 @@ public class Board
     public Cell[,] GetCells()
     {
         return boardState;
+    }
+
+    public PlayerType GetCurrentPlayerType()
+    {
+        return allInputs.Count % 2 == 0 ? PlayerType.A : PlayerType.B;
     }
 }
